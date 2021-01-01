@@ -4,25 +4,50 @@ const c = canvas.getContext('2d')
 canvas.width = innerWidth
 canvas.height = innerHeight / 1.5
 
-let player = {
+let player1 = {
     width: 80,
     height: 80,
     jumping: true,
-   // color: 'blue',
+    color: 'blue',
     x: canvas.width / 10,
     x_velocity: 0,
-    y: canvas.height/2,
+    y: canvas.height / 2,
     y_velocity: 0,
-
-    /*  draw() {
-          c.beginPath()
-          c.rect(this.x, this.y, this.width, this.height)
-          c.fillStyle = this.color
-          c.fill()
-      }*/
 }
 
-let controll = {
+let player2 = {
+    width: 80,
+    height: 80,
+    jumping: true,
+    color: 'green',
+    x:( canvas.width / 10) * 9 - 80,
+    x_velocity: 0,
+    y: canvas.height / 2,
+    y_velocity: 0,
+}
+
+let control1 = {
+    left: false,
+    right: false,
+    up: false,
+    keyListener: function (event) {
+        let key_state = (event.type == 'keydown') ? true : false
+
+        switch (event.keyCode) {
+            case 65:
+                control1.left = key_state;
+                break;
+            case 87:
+                control1.up = key_state
+                break;
+            case 68:
+                control1.right = key_state
+                break;
+        }
+    }
+}
+
+let control2 = {
     left: false,
     right: false,
     up: false,
@@ -31,64 +56,73 @@ let controll = {
 
         switch (event.keyCode) {
             case 37:
-                controll.left = key_state;
+                control2.left = key_state;
                 break;
             case 38:
-                controll.up = key_state
+                control2.up = key_state
                 break;
             case 39:
-                controll.right = key_state
+                control2.right = key_state
                 break;
         }
     }
 }
 
-addEventListener('keydown', controll.keyListener)
-addEventListener('keyup', controll.keyListener)
+addEventListener('keydown', control1.keyListener)
+addEventListener('keydown', control2.keyListener)
+addEventListener('keyup', control1.keyListener)
+addEventListener('keyup', control2.keyListener)
 
-
-function playerMove() {
-    if (controll.up && player.jumping == false) {
-        player.y_velocity -= 50;
-        player.jumping = true;
+function playerMove(i, control, max1, max2) {
+    if (control.up && i.jumping == false) {
+        i.y_velocity -= 50;
+        i.jumping = true;
     }
 
-    if (controll.left) {
-        player.x_velocity -= 1 // @@@
+    if (control.left) {
+        i.x_velocity -= 1 
     }
 
-    if (controll.right) {
-        player.x_velocity += 1 // @@@
+    if (control.right) {
+        i.x_velocity += 1 
     }
 
 
-    player.y_velocity += 1.5; //fall
-    player.x += player.x_velocity;
-    player.y += player.y_velocity;
-    player.x_velocity *= 0.9 //slow
-    player.y_velocity *= 0.9 //slow
+    i.y_velocity += 3; //fall
+    i.x += i.x_velocity;
+    i.y += i.y_velocity;
+    i.x_velocity *= 0.9 //slow
+    i.y_velocity *= 0.9 //slow
 
-    if (player.y > canvas.height/2) { //!!!
-        player.jumping = false
-        player.y = canvas.height / 2
-        player.y_velocity = 0
+    if (i.y > canvas.height / 2) { //!!!
+        i.jumping = false
+        i.y = canvas.height / 2
+        i.y_velocity = 0
     }
 
 
     //!!!!
-    if (player.x < 0) {
-        player.x = 0
-    } else if (player.x > canvas.width-player.width) {
-        player.x = canvas.width-player.width
+    if (i.x < max1) {
+        i.x = max1
+    } else if (i.x > max2) {
+        i.x = max2
     }
     ///
 
     c.beginPath()
-    c.rect(player.x, player.y, player.width, player.height)
-    c.fillStyle = 'blue'
+    c.rect(i.x, i.y, i.width, i.height)
+    c.fillStyle = i.color
     c.fill()
+    c.strokeStyle = "#202830";
+    c.lineWidth = 4;
+    c.beginPath();
+    c.moveTo(canvas.width / 2, 0);
+    c.lineTo(canvas.width / 2, canvas.height);
+    c.stroke();
 
 }
+
+//BARRIER
 
 class Barrier {
     constructor(x, y, width, height, color, velocity) {
@@ -115,7 +149,6 @@ class Barrier {
 
 }
 
-//const player = new Player(canvas.width / 10, canvas.height / 2, 100, 100, 'blue')
 
 const barriers = []
 
@@ -123,16 +156,21 @@ const barriers = []
 function animate() {
     requestAnimationFrame(animate)
     c.clearRect(0, 0, canvas.width, canvas.height)
-    // player.draw()
-    playerMove()
+    playerMove(player1, control1, 0, canvas.width/2 - player1.width)
+    playerMove(player2, control2, canvas.width/2, canvas.width - player2.width)
     barriers.forEach(barrier => {
         barrier.update()
     })
 }
 
 function barrier1() {
-    barriers.push(new Barrier(canvas.width / 1.1, canvas.height / 2, 80, 80, 'red', {
+    barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - 80) + 0.5, 60, 80, 'red', {
         x: -2,
+        y: 0
+    }))
+
+    barriers.push(new Barrier(0 - 60, (canvas.height / 2) + (player1.height - 80) + 0.5, 60, 80, 'red', {
+        x: 2,
         y: 0
     }))
 }
@@ -140,10 +178,22 @@ function barrier1() {
 
 
 (function loop() {
-    var rand = Math.round(Math.random() * (7000 - 3000)) + 3000;
+    let rand = Math.round(Math.random() * (10000 - 8000)) + 8000;
+    let wi = Math.round(Math.random() * (60 - 40)) + 40;
+    let he = 0
+    if (wi > 50) {
+        he = Math.round(Math.random() * (80 - 50)) + 50;
+    } else {
+        he = Math.round(Math.random() * (100 - 50)) + 50;
+    }
+
     setTimeout(function () {
-        barriers.push(new Barrier(canvas.width / 1.1, canvas.height / 2, 80, 80, 'red', {
+        barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - he) + 0.5, wi, he, 'red', {
             x: -2,
+            y: 0
+        }))
+        barriers.push(new Barrier(0 - wi, (canvas.height / 2) + (player1.height - he) + 0.5, wi, he, 'red', {
+            x: 2,
             y: 0
         }))
         loop();
@@ -155,5 +205,3 @@ animate()
 barrier1()
 
 canvas.style.backgroundColor = 'rgb(191, 192, 207)';
-
-//(canvas.height / 2) + player.height
