@@ -2,7 +2,7 @@ const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
 canvas.width = innerWidth
-canvas.height = innerHeight / 1.5
+canvas.height = innerHeight / 1.4
 
 let player1 = {
     width: 80,
@@ -20,7 +20,7 @@ let player2 = {
     height: 80,
     jumping: true,
     color: 'green',
-    x:( canvas.width / 10) * 9 - 80,
+    x: (canvas.width / 10) * 9 - 80,
     x_velocity: 0,
     y: canvas.height / 2,
     y_velocity: 0,
@@ -80,11 +80,11 @@ function playerMove(i, control, max1, max2) {
     }
 
     if (control.left) {
-        i.x_velocity -= 1 
+        i.x_velocity -= 1
     }
 
     if (control.right) {
-        i.x_velocity += 1 
+        i.x_velocity += 1
     }
 
 
@@ -113,11 +113,11 @@ function playerMove(i, control, max1, max2) {
     c.rect(i.x, i.y, i.width, i.height)
     c.fillStyle = i.color
     c.fill()
-    c.strokeStyle = "#202830";
+    c.strokeStyle = "rgb(255, 255, 255)";
     c.lineWidth = 4;
     c.beginPath();
     c.moveTo(canvas.width / 2, 0);
-    c.lineTo(canvas.width / 2, canvas.height);
+    c.lineTo(canvas.width / 2, canvas.height - 30);
     c.stroke();
 
 }
@@ -141,11 +141,28 @@ class Barrier {
         c.fill()
     }
 
+    collision(player) {
+
+        let position = {
+            left: player.x,
+            right: player.x + player.width,
+            bot: player.y + player.height
+        }
+
+        if (position.right < this.x || position.bot < this.y || position.left > this.x + this.width) {
+            return false;
+        }
+
+        return true;
+    }
+
+
     update() {
         this.draw()
         this.x = this.x + this.velocity.x
         this.y = this.y + this.velocity.y
     }
+
 
 }
 
@@ -155,21 +172,40 @@ const barriers = []
 
 function animate() {
     requestAnimationFrame(animate)
-    c.clearRect(0, 0, canvas.width, canvas.height)
-    playerMove(player1, control1, 0, canvas.width/2 - player1.width)
-    playerMove(player2, control2, canvas.width/2, canvas.width - player2.width)
-    barriers.forEach(barrier => {
+    c.fillStyle =  'rgb(39, 39, 39)'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    playerMove(player1, control1, 0, canvas.width / 2 - player1.width)
+    playerMove(player2, control2, canvas.width / 2, canvas.width - player2.width)
+    barriers.forEach((barrier, index) => {
+        if (barrier.collision(player1)) {
+           // console.log("1")
+
+        }
+
+        if (barrier.collision(player2)) {
+           // console.log("2")
+
+        }
+
+
         barrier.update()
+        if(barrier.x + barrier.width < 0 || barrier.x - barrier.width > canvas.width ){
+            console.log('fff')
+            setTimeout(() => {
+                barriers.splice(index, 1)
+
+            },0)
+        }
     })
 }
 
 function barrier1() {
-    barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - 80) + 0.5, 60, 80, 'red', {
+    barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - 80) + 0.5, 50, 80, 'hsl(0, 50%, 50%)', {
         x: -2,
         y: 0
     }))
 
-    barriers.push(new Barrier(0 - 60, (canvas.height / 2) + (player1.height - 80) + 0.5, 60, 80, 'red', {
+    barriers.push(new Barrier(0 - 50, (canvas.height / 2) + (player1.height - 80) + 0.5, 50, 80, 'hsl(0, 50%, 50%)', {
         x: 2,
         y: 0
     }))
@@ -179,23 +215,37 @@ function barrier1() {
 
 (function loop() {
     let rand = Math.round(Math.random() * (10000 - 8000)) + 8000;
-    let wi = Math.round(Math.random() * (60 - 40)) + 40;
-    let he = 0
-    if (wi > 50) {
-        he = Math.round(Math.random() * (80 - 50)) + 50;
+    let wi1 = Math.round(Math.random() * (60 - 40)) + 40;
+    let wi2 = Math.round(Math.random() * (60 - 40)) + 40;
+    let he1 = 0, he2 = 0
+    if (wi1 > 50) {
+        he1 = Math.round(Math.random() * (80 - 50)) + 50;
     } else {
-        he = Math.round(Math.random() * (100 - 50)) + 50;
+        he1 = Math.round(Math.random() * (100 - 50)) + 50;
     }
 
+    if (wi2 > 50) {
+        he2 = Math.round(Math.random() * (80 - 50)) + 50;
+    } else {
+        he2 = Math.round(Math.random() * (100 - 50)) + 50;
+    }
+
+//color
+let saturation1 = Math.round(Math.random() * (70 - 30)) + 30;
+let lightnes1 = Math.round(Math.random() * (60 - 30)) + 30;
+let saturation2 = Math.round(Math.random() * (70 - 30)) + 30;
+let lightnes2 = Math.round(Math.random() * (60 - 30)) + 30;
+
     setTimeout(function () {
-        barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - he) + 0.5, wi, he, 'red', {
+        barriers.push(new Barrier(canvas.width, (canvas.height / 2) + (player1.height - he1) + 0.5, wi1, he1, `hsl(0, ${saturation1}%, ${lightnes1}%)`, {
             x: -2,
             y: 0
         }))
-        barriers.push(new Barrier(0 - wi, (canvas.height / 2) + (player1.height - he) + 0.5, wi, he, 'red', {
+        barriers.push(new Barrier(0 - wi2, (canvas.height / 2) + (player1.height - he2) + 0.5, wi2, he2, `hsl(0, ${saturation2}%, ${lightnes2}%)`, {
             x: 2,
             y: 0
         }))
+        console.log(barriers)
         loop();
     }, rand);
 }());
@@ -204,4 +254,3 @@ function barrier1() {
 animate()
 barrier1()
 
-canvas.style.backgroundColor = 'rgb(191, 192, 207)';

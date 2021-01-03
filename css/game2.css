@@ -19,3 +19,13 @@ body {
     justify-content: center;
 
 }
+
+.bg{
+    background-color: rgb(39, 39, 39);
+}
+
+.txt{
+    padding-top: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
