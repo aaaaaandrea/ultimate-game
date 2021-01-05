@@ -29,3 +29,17 @@ body {
     padding-left: 20px;
     padding-right: 20px;
 }
+
+#tb{
+    position: absolute; 
+    left: 50%;
+    transform: translateX(-50%);
+    top: 40%;
+    width: 20%;
+    height:30%;
+    text-align: center;
+}
+
+.tb-txt{
+    margin: 20px;
+}

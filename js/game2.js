@@ -7,7 +7,7 @@ canvas.height = innerHeight / 1.4
 let player1 = {
     width: 80,
     height: 80,
-    jumping: true,
+    jumping: false,
     color: 'blue',
     x: canvas.width / 10,
     x_velocity: 0,
@@ -18,7 +18,7 @@ let player1 = {
 let player2 = {
     width: 80,
     height: 80,
-    jumping: true,
+    jumping: false,
     color: 'green',
     x: (canvas.width / 10) * 9 - 80,
     x_velocity: 0,
@@ -167,64 +167,28 @@ class Barrier {
 }
 
 
-const barriers = []
+let barriers = []
 
 let points1 = document.getElementById('points1')
 let points2 = document.getElementById('points2')
 let lives1 = document.getElementById('lives1')
 let lives2 = document.getElementById('lives2')
+let score1 = document.getElementById('score1')
+let score2 = document.getElementById('score2')
 let count1 = 0,
     count2 = 0,
     live1 = 3,
     live2 = 3
 
+let animationID;
 
 function animate() {
-    requestAnimationFrame(animate)
+    animationID = requestAnimationFrame(animate)
     c.fillStyle = 'rgb(39, 39, 39)'
     c.fillRect(0, 0, canvas.width, canvas.height)
     playerMove(player1, control1, 0, canvas.width / 2 - player1.width)
     playerMove(player2, control2, canvas.width / 2, canvas.width - player2.width)
     barriers.forEach((barrier, index) => {
-        if (barrier.collision(player1)) {
-            // console.log("1")
-            switch (live1) {
-                case 3:
-                    live1 -= 1
-                    lives1.innerHTML = '○♥♥'
-
-                    break
-                case 2:
-                    live1 -= 1
-                    lives1.innerHTML = '○○♥'
-                    break
-                case 1:
-                    live1 -= 1
-                    lives1.innerHTML ='○○○'
-                    break
-            }
-
-        }
-
-        if (barrier.collision(player2)) {
-            // console.log("2")
-            switch (live2) {
-                case 3:
-                    live2 -= 1
-                    lives2.innerHTML = '○♥♥'
-
-                    break
-                case 2:
-                    live2 -= 1
-                    lives2.innerHTML = '○○♥'
-                    break
-                case 1:
-                    live2 -= 1
-                    lives2.innerHTML ='○○○'
-                    break
-            }
-
-        }
 
         if (player1.x > barrier.x + barrier.width / 3 && player1.x < (barrier.x + barrier.width / 1.9)) {
             count1 += 10
@@ -237,6 +201,57 @@ function animate() {
             points2.innerHTML = count2
         }
 
+        if (barrier.collision(player1)) {
+            // console.log("1")
+            switch (live1) {
+                case 3:
+                    live1 -= 1
+                    lives1.innerHTML = '○♥♥'
+                    reset()
+
+                    break
+                case 2:
+                    live1 -= 1
+                    lives1.innerHTML = '○○♥'
+                    reset()
+                    break
+                case 1:
+                    lives1.innerHTML = '○○○'
+                    score1.innerHTML = count1
+                    score2.innerHTML = count2
+                    tb.style.display = 'block'
+                    cancelAnimationFrame(animationID)
+
+                    break
+            }
+
+        }
+
+        if (barrier.collision(player2)) {
+            // console.log("2")
+            switch (live2) {
+                case 3:
+                    live2 -= 1
+                    lives2.innerHTML = '○♥♥'
+                    reset()
+
+                    break
+                case 2:
+                    live2 -= 1
+                    lives2.innerHTML = '○○♥'
+                    reset()
+                    break
+                case 1:
+                    lives2.innerHTML = '○○○'
+                    score1.innerHTML = count1
+                    score2.innerHTML = count2
+                    tb.style.display = 'block'
+                    cancelAnimationFrame(animationID)
+
+                    break
+            }
+
+        }
 
         barrier.update()
         if (barrier.x + barrier.width < 0 || barrier.x - barrier.width > canvas.width) {
@@ -300,6 +315,48 @@ function barrier1() {
     }, rand);
 }());
 
+function reset() {
+    barriers = []
+    player1 = {
+        width: 80,
+        height: 80,
+        jumping: false,
+        color: 'blue',
+        x: canvas.width / 10,
+        x_velocity: 0,
+        y: canvas.height / 2,
+        y_velocity: 0,
+    }
 
-animate()
-barrier1()
+    player2 = {
+        width: 80,
+        height: 80,
+        jumping: false,
+        color: 'green',
+        x: (canvas.width / 10) * 9 - 80,
+        x_velocity: 0,
+        y: canvas.height / 2,
+        y_velocity: 0,
+    }
+}
+
+
+
+tb = document.getElementById('tb')
+
+tb.addEventListener('click',
+    function () {
+        reset()
+        count1 = 0
+        count2 = 0
+        live1 = 3
+        live2 = 3
+        points1.innerHTML = '0'
+        points2.innerHTML = '0'
+        animate()
+        barrier1()
+        lives1.innerHTML = '♥♥♥'
+        lives2.innerHTML = '♥♥♥'
+        tb.style.display = 'none'
+    }
+);
